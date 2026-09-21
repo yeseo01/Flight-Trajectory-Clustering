@@ -20,62 +20,70 @@ DATA_DIR = PROJECT_ROOT / "data" / "raw"
 # =========================
 # 1) 데이터 불러오기
 # =========================
+FLIGHT_DATA_FILES = (
+    ('AAR', 'ICN_SIN_AAR751_final.xlsx'),
+    ('JJA', 'ICN_SIN_JJA2623_final.xlsx'),
+    ('KAL643', 'ICN_SIN_KAL643_final.xlsx'),
+    ('KAL645', 'ICN_SIN_KAL645_final.xlsx'),
+    ('SIA601', 'ICN_SIN_SIA601_final.xlsx'),
+    ('SIA605', 'ICN_SIN_SIA605_final.xlsx'),
+    ('TGW', 'ICN_SIN_TGW843_final.xlsx'),
+    ('TWB', 'ICN_SIN_TWB161_final.xlsx'),
+)
+
+TRAJECTORY_COLUMNS = (
+    'Time (KST)',
+    'Latitude',
+    'Longitude',
+    'kts',
+    'mph',
+    'feet',
+)
+
+
 def read_data():
-    # 파일 읽기
-    data_AAR = pd.read_excel(DATA_DIR / 'ICN_SIN_AAR751_final.xlsx', sheet_name=None)
-    data_JJA = pd.read_excel(DATA_DIR / 'ICN_SIN_JJA2623_final.xlsx', sheet_name=None)
-    data_KAL643 = pd.read_excel(DATA_DIR / 'ICN_SIN_KAL643_final.xlsx', sheet_name=None)
-    data_KAL645 = pd.read_excel(DATA_DIR / 'ICN_SIN_KAL645_final.xlsx', sheet_name=None)
-    data_SIA601 = pd.read_excel(DATA_DIR / 'ICN_SIN_SIA601_final.xlsx', sheet_name=None)
-    data_SIA605 = pd.read_excel(DATA_DIR / 'ICN_SIN_SIA605_final.xlsx', sheet_name=None)
-    data_TGW = pd.read_excel(DATA_DIR / 'ICN_SIN_TGW843_final.xlsx', sheet_name=None)
-    data_TWB = pd.read_excel(DATA_DIR / 'ICN_SIN_TWB161_final.xlsx', sheet_name=None)
+    flights = []
+    meta = []
 
-    airline_data = {
-        'AAR': data_AAR,
-        'JJA': data_JJA,
-        'KAL643': data_KAL643,
-        'KAL645': data_KAL645,
-        'SIA601': data_SIA601,
-        'SIA605': data_SIA605,
-        'TGW': data_TGW,
-        'TWB': data_TWB
-    }
+    for airline, filename in FLIGHT_DATA_FILES:
+        workbook = pd.read_excel(
+            DATA_DIR / filename,
+            sheet_name=None
+        )
 
-    flights = []   # 각 비행의 DataFrame
-    meta = []      # 각 비행의 메타정보 (airline, sheet 등)
-
-    for name in ['AAR', 'JJA', 'KAL643', 'KAL645', 'SIA601', 'SIA605', 'TGW', 'TWB']:
-        data_dict = airline_data[name]
-
-        for i in range(1, 100):  # Sheet1~54 시도 (실제 없는 시트는 그냥 스킵)
+        for i in range(1, 100):
             sheet_name = f'Sheet{i}'
-            if sheet_name not in data_dict:
+
+            if sheet_name not in workbook:
                 continue
 
-            # 필요한 컬럼만 선택해서 복사
-            df = data_dict[sheet_name][[
-                'Time (KST)', 'Latitude', 'Longitude',
-                'kts', 'mph', 'feet'
-            ]].copy()
+            df = workbook[sheet_name][
+                list(TRAJECTORY_COLUMNS)
+            ].copy()
 
-            # kts, mph, feet NaN 선형 보간 (앞/뒤까지 채움)
-            df[['kts', 'mph', 'feet']] = df[['kts', 'mph', 'feet']].interpolate(
+            df[['kts', 'mph', 'feet']] = df[
+                ['kts', 'mph', 'feet']
+            ].interpolate(
                 method='linear',
                 limit_direction='both'
             )
 
-            # 위·경도/시간이 NaN인 행은 버림
-            df = df.dropna(subset=['Time (KST)', 'Latitude', 'Longitude'])
+            df = df.dropna(
+                subset=[
+                    'Time (KST)',
+                    'Latitude',
+                    'Longitude',
+                ]
+            )
 
             if len(df) == 0:
                 continue
 
             flights.append(df)
             meta.append({
-                'airline': name,
+                'airline': airline,
                 'sheet': sheet_name,
-                'flight_index': len(flights) - 1
+                'flight_index': len(flights) - 1,
             })
 
     return flights, meta
