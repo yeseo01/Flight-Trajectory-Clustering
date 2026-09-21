@@ -379,11 +379,13 @@ def evaluate_clustering(dist_matrix, labels):
             'silhouette': -1.0
         }
 
-    try:
-        # silhouette score 계산 (1.0 → 완벽한 클러스터링 / 0.0 → 클러스터가 거의 겹침 / -1.0 → 클러스터링이 오히려 잘못됨)
-        sil = silhouette_score(dist_core, labels_core, metric='precomputed')
-    except Exception: # 에러 발생하면 -1.0으로 처리.
-        sil = -1.0
+    # Silhouette ranges from -1 to 1; invalid distance matrices should raise
+    # an error rather than being silently treated as poor clustering.
+    sil = silhouette_score(
+        dist_core,
+        labels_core,
+        metric='precomputed'
+    )
 
     # Course-project heuristic:
     # 90% silhouette quality + 10% penalty for trajectories classified as noise.
