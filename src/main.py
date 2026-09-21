@@ -30,7 +30,7 @@ def main():
         coords, *_ = resample_trajectory(df, n_points=n_points)
         coords_list.append(coords)
 
-    coords_arr = np.stack(coords_list)   # (N, n_points, 2)
+    coords_arr = np.stack(coords_list)  # (N, n_points, 2)
 
     # 3) Compute the Hausdorff distance matrix
     print("Computing Hausdorff distance matrix...")
@@ -41,7 +41,7 @@ def main():
     model = hdbscan.HDBSCAN(
         min_cluster_size=80,
         min_samples=98,
-        metric='precomputed'
+        metric="precomputed",
     )
     labels = model.fit_predict(dist_matrix)
 

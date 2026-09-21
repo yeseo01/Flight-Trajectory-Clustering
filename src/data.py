@@ -10,23 +10,23 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = PROJECT_ROOT / "data" / "raw"
 
 FLIGHT_DATA_FILES = (
-    ('AAR', 'ICN_SIN_AAR751_final.xlsx'),
-    ('JJA', 'ICN_SIN_JJA2623_final.xlsx'),
-    ('KAL643', 'ICN_SIN_KAL643_final.xlsx'),
-    ('KAL645', 'ICN_SIN_KAL645_final.xlsx'),
-    ('SIA601', 'ICN_SIN_SIA601_final.xlsx'),
-    ('SIA605', 'ICN_SIN_SIA605_final.xlsx'),
-    ('TGW', 'ICN_SIN_TGW843_final.xlsx'),
-    ('TWB', 'ICN_SIN_TWB161_final.xlsx'),
+    ("AAR", "ICN_SIN_AAR751_final.xlsx"),
+    ("JJA", "ICN_SIN_JJA2623_final.xlsx"),
+    ("KAL643", "ICN_SIN_KAL643_final.xlsx"),
+    ("KAL645", "ICN_SIN_KAL645_final.xlsx"),
+    ("SIA601", "ICN_SIN_SIA601_final.xlsx"),
+    ("SIA605", "ICN_SIN_SIA605_final.xlsx"),
+    ("TGW", "ICN_SIN_TGW843_final.xlsx"),
+    ("TWB", "ICN_SIN_TWB161_final.xlsx"),
 )
 
 TRAJECTORY_COLUMNS = (
-    'Time (KST)',
-    'Latitude',
-    'Longitude',
-    'kts',
-    'mph',
-    'feet',
+    "Time (KST)",
+    "Latitude",
+    "Longitude",
+    "kts",
+    "mph",
+    "feet",
 )
 
 
@@ -37,7 +37,7 @@ def read_data():
     for airline, filename in FLIGHT_DATA_FILES:
         workbook = pd.read_excel(
             DATA_DIR / filename,
-            sheet_name=None
+            sheet_name=None,
         )
 
         for i in range(1, 100):
@@ -50,19 +50,19 @@ def read_data():
                 list(TRAJECTORY_COLUMNS)
             ].copy()
 
-            df[['kts', 'mph', 'feet']] = df[
-                ['kts', 'mph', 'feet']
+            df[["kts", "mph", "feet"]] = df[
+                ["kts", "mph", "feet"]
             ].interpolate(
-                method='linear',
-                limit_direction='both'
+                method="linear",
+                limit_direction="both",
             )
 
             df = df.dropna(
                 subset=[
-                    'Time (KST)',
-                    'Latitude',
-                    'Longitude',
-                ]
+                    "Time (KST)",
+                    "Latitude",
+                    "Longitude",
+                ],
             )
 
             if len(df) == 0:
@@ -70,9 +70,9 @@ def read_data():
 
             flights.append(df)
             meta.append({
-                'airline': airline,
-                'sheet': sheet_name,
-                'flight_index': len(flights) - 1,
+                "airline": airline,
+                "sheet": sheet_name,
+                "flight_index": len(flights) - 1,
             })
 
     return flights, meta
@@ -88,11 +88,11 @@ def resample_trajectory(data, n_points=100):
         mph_new:  (n_points,)
         feet_new: (n_points,)
     """
-    lon = data['Longitude'].values
-    lat = data['Latitude'].values
-    kts = data['kts'].values
-    mph = data['mph'].values
-    feet = data['feet'].values
+    lon = data["Longitude"].values
+    lat = data["Latitude"].values
+    kts = data["kts"].values
+    mph = data["mph"].values
+    feet = data["feet"].values
 
     n = len(data)
 
