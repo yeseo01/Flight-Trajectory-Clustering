@@ -355,11 +355,11 @@ def evaluate_clustering(dist_matrix, labels):
     dist_matrix: (N, N) Hausdorff distance matrix
     labels: HDBSCAN 클러스터 라벨
     """
-    # noise(-1) 제거하고 core points만 사용
+    # Exclude HDBSCAN noise points (label = -1) from silhouette evaluation.
     mask_core = labels != -1
     core_idx = np.where(mask_core)[0]
 
-    # noise 제외하고 남은 점이 2개 미만이면 평가 불가능
+    # Fewer than two non-noise samples cannot be evaluated.
     if len(core_idx) < 2:
         return -1.0, {
             'n_clusters': 0,
@@ -370,7 +370,7 @@ def evaluate_clustering(dist_matrix, labels):
     labels_core = labels[core_idx]
     dist_core = dist_matrix[np.ix_(core_idx, core_idx)]
 
-    # core cluster 개수가 2개 미만이면 silhouette score 불가능
+    # Silhouette score requires at least two non-noise clusters.
     n_clusters = len(np.unique(labels_core))
     if n_clusters < 2:
         return -1.0, {
@@ -385,9 +385,10 @@ def evaluate_clustering(dist_matrix, labels):
     except Exception: # 에러 발생하면 -1.0으로 처리.
         sil = -1.0
 
-    # 최종 점수 계산: noise가 너무 많으면 좋지 않기 때문에 silhouette score에서 noise penalty를 빼서 계산함
+    # Course-project heuristic:
+    # 90% silhouette quality + 10% penalty for trajectories classified as noise.
     noise_ratio = float(np.mean(labels == -1))
-    combined = sil - 0.5 * noise_ratio  # heuristic
+    combined = 0.9 * sil - 0.1 * noise_ratio
 
     # 모든 평가 지표를 info 딕셔너리로 묶어서 반환
     info = {
