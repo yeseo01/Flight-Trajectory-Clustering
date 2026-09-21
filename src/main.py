@@ -6,11 +6,16 @@
 # 실행시간: 약 5분 소요
 # 해당 코드와 같은 폴더에 데이터를 넣고 실행해야합니다.
 
+from pathlib import Path
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import hdbscan
 from sklearn.metrics import silhouette_score
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DATA_DIR = PROJECT_ROOT / "data" / "raw"
 
 plt.rcParams['font.family'] = 'Malgun Gothic'
 plt.rcParams['font.family'] = 'AppleGothic'
@@ -20,14 +25,14 @@ plt.rcParams['font.family'] = 'AppleGothic'
 # =========================
 def read_data():
     # 파일 읽기
-    data_AAR = pd.read_excel('ICN_SIN_AAR751_final.xlsx', sheet_name=None)
-    data_JJA = pd.read_excel('ICN_SIN_JJA2623_final.xlsx', sheet_name=None)
-    data_KAL643 = pd.read_excel('ICN_SIN_KAL643_final.xlsx', sheet_name=None)
-    data_KAL645 = pd.read_excel('ICN_SIN_KAL645_final.xlsx', sheet_name=None)
-    data_SIA601 = pd.read_excel('ICN_SIN_SIA601_final.xlsx', sheet_name=None)
-    data_SIA605 = pd.read_excel('ICN_SIN_SIA605_final.xlsx', sheet_name=None)
-    data_TGW = pd.read_excel('ICN_SIN_TGW843.final_xlsx', sheet_name=None)
-    data_TWB = pd.read_excel('ICN_SIN_TWB161_final.xlsx', sheet_name=None)
+    data_AAR = pd.read_excel(DATA_DIR / 'ICN_SIN_AAR751_final.xlsx', sheet_name=None)
+    data_JJA = pd.read_excel(DATA_DIR / 'ICN_SIN_JJA2623_final.xlsx', sheet_name=None)
+    data_KAL643 = pd.read_excel(DATA_DIR / 'ICN_SIN_KAL643_final.xlsx', sheet_name=None)
+    data_KAL645 = pd.read_excel(DATA_DIR / 'ICN_SIN_KAL645_final.xlsx', sheet_name=None)
+    data_SIA601 = pd.read_excel(DATA_DIR / 'ICN_SIN_SIA601_final.xlsx', sheet_name=None)
+    data_SIA605 = pd.read_excel(DATA_DIR / 'ICN_SIN_SIA605_final.xlsx', sheet_name=None)
+    data_TGW = pd.read_excel(DATA_DIR / 'ICN_SIN_TGW843_final.xlsx', sheet_name=None)
+    data_TWB = pd.read_excel(DATA_DIR / 'ICN_SIN_TWB161_final.xlsx', sheet_name=None)
 
     airline_data = {
         'AAR': data_AAR,
