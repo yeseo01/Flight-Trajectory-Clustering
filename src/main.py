@@ -17,9 +17,6 @@ from sklearn.metrics import silhouette_score
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = PROJECT_ROOT / "data" / "raw"
 
-plt.rcParams['font.family'] = 'Malgun Gothic'
-plt.rcParams['font.family'] = 'AppleGothic'
-
 # =========================
 # 1) 데이터 불러오기
 # =========================
@@ -412,21 +409,12 @@ def main():
     # 2) 리샘플링
     n_points = 300  # 500이 너무 느리면 200~300 정도로 줄여도 됨
     coords_list = []
-    # kts_list = []
-    # mph_list = []
-    # feet_list = []
 
     for df in flights:
-        coords, kts_new, mph_new, feet_new = resample_trajectory(df, n_points=n_points)
+        coords, *_ = resample_trajectory(df, n_points=n_points)
         coords_list.append(coords)
-        # kts_list.append(kts_new)
-        # mph_list.append(mph_new)
-        # feet_list.append(feet_new)
 
     coords_arr = np.stack(coords_list)   # (N, n_points, 2)
-    # kts_arr = np.stack(kts_list)         # (N, n_points)
-    # mph_arr = np.stack(mph_list)         # (N, n_points)
-    # feet_arr = np.stack(feet_list)       # (N, n_points)
 
     # 3) Hausdorff distance matrix 계산
     print("Hausdorff distance matrix 계산 중...")
@@ -458,8 +446,6 @@ def main():
     # 7) 클러스터별 평균 경로
     plot_cluster_mean_trajectories(coords_arr, labels)
 
-    # 8) 클러스터별 평균 속도/고도 프로파일
-    # plot_cluster_profiles(kts_arr, mph_arr, feet_arr, labels)
 
 
 if __name__ == "__main__":
