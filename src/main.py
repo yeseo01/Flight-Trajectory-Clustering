@@ -1,11 +1,5 @@
 """Flight trajectory clustering with HDBSCAN."""
 
-
-# Hausdorff HDBSCAN
-
-# 실행시간: 약 5분 소요
-# 해당 코드와 같은 폴더에 데이터를 넣고 실행해야합니다.
-
 from pathlib import Path
 
 import pandas as pd
@@ -18,7 +12,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = PROJECT_ROOT / "data" / "raw"
 
 # =========================
-# 1) 데이터 불러오기
+# 1) Load data
 # =========================
 FLIGHT_DATA_FILES = (
     ('AAR', 'ICN_SIN_AAR751_final.xlsx'),
@@ -90,12 +84,12 @@ def read_data():
 
 
 # =========================
-# 2) 경로 + 속도/고도 리샘플링
+# 2) Resample trajectory, speed, and altitude
 # =========================
 def resample_trajectory(data, n_points=100):
     """
-    data: 하나의 비행 데이터 (Time, Latitude, Longitude, kts, mph, feet 포함)
-    n_points: 새로 생성할 경로의 포인트 개수
+    data: DataFrame for one flight containing time, position, speed, and altitude
+    n_points: Number of points in the resampled trajectory
     return:
         coords:   (n_points, 2)  [lon, lat]
         kts_new:  (n_points,)
@@ -110,11 +104,11 @@ def resample_trajectory(data, n_points=100):
 
     n = len(data)
 
-    # 원래 인덱스를 0~1 구간으로 정규화
+    # Normalize the original sample positions to the interval [0, 1]
     orig_idx = np.linspace(0, 1, n)
     new_idx = np.linspace(0, 1, n_points)
 
-    # 선형 보간
+    # Linear interpolation
     lon_new = np.interp(new_idx, orig_idx, lon)
     lat_new = np.interp(new_idx, orig_idx, lat)
     kts_new = np.interp(new_idx, orig_idx, kts)
@@ -126,12 +120,12 @@ def resample_trajectory(data, n_points=100):
 
 
 # =========================
-# 3) Hausdorff distance 구현
+# 3) Hausdorff distance
 # =========================
 def hausdorff_distance(traj1, traj2):
     """
-    traj1, traj2: (n_points, 2) 형태의 경로 (lon, lat)
-    대칭 Hausdorff distance (Euclidean) 반환
+    traj1, traj2: Trajectories with shape (n_points, 2), ordered as [lon, lat]
+    return: Symmetric Hausdorff distance using Euclidean point distances
     """
     # (n1, n2, 2)
     diff = traj1[:, None, :] - traj2[None, :, :]
@@ -143,8 +137,8 @@ def hausdorff_distance(traj1, traj2):
 
 def compute_hausdorff_distance_matrix(coords_arr):
     """
-    coords_arr: (N, n_points, 2) 모든 비행 경로
-    return: (N, N) 대칭 distance matrix
+    coords_arr: All trajectories with shape (N, n_points, 2)
+    return: Symmetric pairwise distance matrix with shape (N, N)
     """
     N = coords_arr.shape[0]
     D = np.zeros((N, N), dtype=float)
@@ -158,11 +152,11 @@ def compute_hausdorff_distance_matrix(coords_arr):
 
 
 # =========================
-# 4) 기본 경로 플롯 (개별 경로)
+# 4) Plot individual trajectories
 # =========================
 def plot_paths(coords_arr, labels):
     """
-    coords_arr: (N, n_points, 2)
+    coords_arr: Trajectories with shape (N, n_points, 2)
     """
     plt.figure(figsize=(10, 5))
 
@@ -201,13 +195,12 @@ def plot_paths(coords_arr, labels):
 
 
 # =========================
-# 5) 클러스터별 평균 경로
+# 5) Plot cluster-wise mean trajectories
 # =========================
 def plot_cluster_mean_trajectories(coords_arr, labels):
     """
-    coords_arr: (N, n_points, 2)
+    coords_arr: Trajectories with shape (N, n_points, 2)
     """
-    N, n_points, _ = coords_arr.shape
     plt.figure(figsize=(10, 5))
     unique_labels = np.unique(labels)
     cmap = plt.colormaps.get_cmap('tab10')
@@ -246,19 +239,19 @@ def plot_cluster_mean_trajectories(coords_arr, labels):
 
 
 # =========================
-# 6) 클러스터별 평균 속도/고도 프로파일
+# 6) Optional analysis: cluster-wise speed and altitude profiles
 # =========================
 def plot_cluster_profiles(kts_arr, mph_arr, feet_arr, labels):
     """
     kts_arr, mph_arr, feet_arr: (n_flights, n_points)
     """
-    n_flights, n_points = kts_arr.shape
+    n_points = kts_arr.shape[1]
     unique_labels = np.unique(labels)
     cmap = plt.colormaps.get_cmap('tab10')
-    x = np.linspace(0, 1, n_points)  # 0~1: 경로 진행도
+    x = np.linspace(0, 1, n_points)  # normalized trajectory progress from 0 to 1
 
     # -------------------------
-    # 1) 속도 (kts)
+    # 1) Speed (kts)
     # -------------------------
     plt.figure(figsize=(10, 4))
     for cluster_label in unique_labels:
@@ -269,7 +262,7 @@ def plot_cluster_profiles(kts_arr, mph_arr, feet_arr, labels):
 
         mean_kts = kts_arr[mask].mean(axis=0)
 
-        # 노이즈 색상(검정)
+        # Plot noise in black
         if cluster_label == -1:
             color = 'k'
             name = 'Noise'
@@ -290,7 +283,7 @@ def plot_cluster_profiles(kts_arr, mph_arr, feet_arr, labels):
     plt.show()
 
     # -------------------------
-    # 2) 속도 (mph)
+    # 2) Speed (mph)
     # -------------------------
     plt.figure(figsize=(10, 4))
     for cluster_label in unique_labels:
@@ -321,7 +314,7 @@ def plot_cluster_profiles(kts_arr, mph_arr, feet_arr, labels):
     plt.show()
 
     # -------------------------
-    # 3) 고도 (feet)
+    # 3) Altitude (feet)
     # -------------------------
     plt.figure(figsize=(10, 4))
     for cluster_label in unique_labels:
@@ -353,30 +346,30 @@ def plot_cluster_profiles(kts_arr, mph_arr, feet_arr, labels):
 
 
 # =========================
-# 7) HDBSCAN 평가
+# 7) Evaluate HDBSCAN clustering
 # =========================
 def evaluate_clustering(dist_matrix, labels):
     """
-    dist_matrix: (N, N) Hausdorff distance matrix
-    labels: HDBSCAN 클러스터 라벨
+    dist_matrix: Hausdorff distance matrix with shape (N, N)
+    labels: HDBSCAN cluster labels
     """
     # Exclude HDBSCAN noise points (label = -1) from silhouette evaluation.
-    mask_core = labels != -1
-    core_idx = np.where(mask_core)[0]
+    non_noise_mask = labels != -1
+    non_noise_idx = np.where(non_noise_mask)[0]
 
     # Fewer than two non-noise samples cannot be evaluated.
-    if len(core_idx) < 2:
+    if len(non_noise_idx) < 2:
         return -1.0, {
             'n_clusters': 0,
             'noise_ratio': 1.0,
             'silhouette': -1.0
         }
 
-    labels_core = labels[core_idx]
-    dist_core = dist_matrix[np.ix_(core_idx, core_idx)]
+    labels_non_noise = labels[non_noise_idx]
+    dist_non_noise = dist_matrix[np.ix_(non_noise_idx, non_noise_idx)]
 
     # Silhouette score requires at least two non-noise clusters.
-    n_clusters = len(np.unique(labels_core))
+    n_clusters = len(np.unique(labels_non_noise))
     if n_clusters < 2:
         return -1.0, {
             'n_clusters': n_clusters,
@@ -387,8 +380,8 @@ def evaluate_clustering(dist_matrix, labels):
     # Silhouette ranges from -1 to 1; invalid distance matrices should raise
     # an error rather than being silently treated as poor clustering.
     sil = silhouette_score(
-        dist_core,
-        labels_core,
+        dist_non_noise,
+        labels_non_noise,
         metric='precomputed'
     )
 
@@ -397,7 +390,7 @@ def evaluate_clustering(dist_matrix, labels):
     noise_ratio = float(np.mean(labels == -1))
     combined = 0.9 * sil - 0.1 * noise_ratio
 
-    # 모든 평가 지표를 info 딕셔너리로 묶어서 반환
+    # Return the individual evaluation metrics together
     info = {
         'n_clusters': n_clusters,
         'noise_ratio': noise_ratio,
@@ -407,15 +400,15 @@ def evaluate_clustering(dist_matrix, labels):
 
 
 # =========================
-# 9) main()
+# 8) main()
 # =========================
 def main():
-    # 1) 데이터 불러오기
-    flights, meta = read_data()
-    print(f"총 비행 개수: {len(flights)}\n")
+    # 1) Load data
+    flights, _ = read_data()
+    print(f"Total flights: {len(flights)}\n")
 
-    # 2) 리샘플링
-    n_points = 300  # 500이 너무 느리면 200~300 정도로 줄여도 됨
+    # 2) Resample trajectories
+    n_points = 300
     coords_list = []
 
     for df in flights:
@@ -424,12 +417,12 @@ def main():
 
     coords_arr = np.stack(coords_list)   # (N, n_points, 2)
 
-    # 3) Hausdorff distance matrix 계산
-    print("Hausdorff distance matrix 계산 중...")
+    # 3) Compute the Hausdorff distance matrix
+    print("Computing Hausdorff distance matrix...")
     dist_matrix = compute_hausdorff_distance_matrix(coords_arr)
-    print("완료!\n")
+    print("Done.\n")
 
-    # 4) 학습
+    # 4) Fit HDBSCAN
     model = hdbscan.HDBSCAN(
         min_cluster_size=80,
         min_samples=98,
@@ -437,23 +430,24 @@ def main():
     )
     labels = model.fit_predict(dist_matrix)
 
-    # 5) 평가
+    # 5) Evaluate clustering
     score, info = evaluate_clustering(dist_matrix, labels)
-    print("=== Clustering Score ===")
-    print(score)
+    print("=== Clustering Evaluation ===")
+    print(f"Silhouette score: {info['silhouette']:.6f}")
+    print(f"Noise ratio: {info['noise_ratio']:.6f}")
+    print(f"Project heuristic score: {score:.6f}")
 
-    # --- 클러스터 크기 출력 ---
+    # Report cluster sizes
     unique, counts = np.unique(labels, return_counts=True)
-    print("\n=== 클러스터 크기 요약 ===")
+    print("\n=== Cluster Sizes ===")
     for u, c in zip(unique, counts):
         print(f"Cluster {u}: {c}")
 
-    # 6) 경로 플롯
+    # 6) Plot clustered trajectories
     plot_paths(coords_arr, labels)
 
-    # 7) 클러스터별 평균 경로
+    # 7) Plot cluster-wise mean trajectories
     plot_cluster_mean_trajectories(coords_arr, labels)
-
 
 
 if __name__ == "__main__":
