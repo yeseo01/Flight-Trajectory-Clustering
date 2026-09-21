@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Local raw flight data
+*.xlsx
+*.xls
+
+# Course/reference materials
+*.pptx
+Project_2_description.pdf
+
+# IDE / editor
+.vscode/
+.idea/
