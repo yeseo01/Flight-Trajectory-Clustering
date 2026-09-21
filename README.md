@@ -145,6 +145,10 @@ Score:     0.7781885097560663
 ```text
 .
 ├── src/
+│   ├── __init__.py
+│   ├── data.py
+│   ├── clustering.py
+│   ├── visualization.py
 │   └── main.py
 ├── data/
 │   └── raw/          # local trajectory workbooks; not tracked by Git
@@ -208,7 +212,7 @@ mkdir -p data/raw
 Run the clustering pipeline with:
 
 ```bash
-python src/main.py
+python -m src.main
 ```
 
 The pairwise Hausdorff distance matrix is the computationally expensive stage. In one validation run on the development machine, computation for 591 trajectories resampled to 300 points took approximately 4.6 minutes.
@@ -231,7 +235,7 @@ The original team presentation also included follow-up work such as:
 - investigation of individual abnormal trajectories, and
 - qualitative discussion of possible weather and ATC-related deviations.
 
-Those follow-up analyses are **not implemented in the current `src/main.py`**, so they are not presented here as reproducible outputs.
+Those follow-up analyses are **not implemented in the current codebase**, so they are not presented here as reproducible outputs.
 
 ## Team Project and Contributions
 
