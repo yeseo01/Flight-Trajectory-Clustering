@@ -2,9 +2,34 @@
 
 Clustering 591 real-world flight trajectories between Incheon and Singapore using HDBSCAN with a precomputed Hausdorff distance matrix.
 
-This repository contains the reproducible core clustering pipeline from a Fall 2025 team course project on identifying representative flight-path patterns and abnormal trajectories.
+This repository contains the reproducible core clustering pipeline from a Fall 2025 team course project on identifying representative flight-path patterns and trajectories labeled as noise.
 
-## Project Overview
+## Key Highlights
+
+- Clustered 591 real-world flight trajectories on the Incheon-Singapore route.
+- Normalized variable-length trajectories to 300 sample-position points for pairwise comparison.
+- Used symmetric Hausdorff distances with HDBSCAN through a precomputed distance matrix.
+- Reproduced two non-noise clusters containing 87 and 476 trajectories, with 28 noise trajectories and a silhouette score of 0.869918.
+
+
+## Reproduced Results
+
+The current repository reproduces the final course-project clustering result:
+
+| Result | Value |
+| --- | ---: |
+| Total trajectories | 591 |
+| Cluster 0 | 87 |
+| Cluster 1 | 476 |
+| Noise | 28 |
+| Silhouette score | 0.869918 |
+| Noise ratio | 0.047377 |
+| Project heuristic score | 0.778189 |
+
+The cluster counts exactly match the final presentation result.
+
+
+## Pipeline Overview
 
 The project studies variations among flight trajectories on the Incheon–Singapore route.
 
@@ -17,7 +42,23 @@ The core pipeline:
 5. evaluates the resulting clusters using silhouette score and noise ratio, and
 6. visualizes the clustered paths and cluster-wise mean trajectories.
 
-The validated dataset contains **591 trajectories**.
+## Project Context & My Role
+
+This was a three-person Fall 2025 course project:
+
+**Clustering Flight Trajectories using HDBSCAN: Identifying Operational Patterns and Anomalies**
+
+The assignment required an end-to-end workflow for collecting, preprocessing, clustering, and analyzing real-world flight trajectory data.
+
+**Yeseo Kim**
+
+- proposed normalizing trajectories with different sample counts to a common length,
+- implemented the HDBSCAN clustering pipeline for the collected flight data,
+- experimented with HDBSCAN hyperparameters, and
+- coordinated the overall project workflow and presentation preparation.
+
+Other team contributions included flight-data collection, adapting the trajectory comparison to Hausdorff distance, proposing additional noise-based evaluation and analysis, and investigating trajectories with unusual flight-path patterns.
+
 
 ## Methodology
 
@@ -80,25 +121,9 @@ Score =
 
 This score is a project-specific heuristic rather than a standard HDBSCAN evaluation metric.
 
-## Reproduced Results
-
-The cleaned repository reproduces the final course-project clustering result:
-
-| Result | Value |
-| --- | ---: |
-| Total trajectories | 591 |
-| Cluster 0 | 87 |
-| Cluster 1 | 476 |
-| Noise | 28 |
-| Silhouette score | 0.869918 |
-| Noise ratio | 0.047377 |
-| Project heuristic score | 0.778189 |
-
-The cluster counts exactly match the final presentation result.
-
 ## Reproducibility Audit
 
-During repository cleanup, several additional checks were performed without changing the original project methodology.
+As part of post-project reproducibility validation, several additional checks were performed without changing the original project methodology.
 
 ### Resampling
 
@@ -217,38 +242,12 @@ python -m src.main
 
 The pairwise Hausdorff distance matrix is the computationally expensive stage. In one validation run on the development machine, computation for 591 trajectories resampled to 300 points took approximately 4.6 minutes.
 
-## Current Repository Scope
+## Repository Scope
 
-This repository reproduces the core HDBSCAN pipeline, including:
+The current repository reproduces the core HDBSCAN workflow: data loading and preprocessing, fixed-length trajectory resampling, Hausdorff-distance computation, HDBSCAN clustering, evaluation, and trajectory visualization.
 
-- data loading and preprocessing,
-- fixed-length trajectory resampling,
-- Hausdorff distance computation,
-- HDBSCAN clustering,
-- clustering evaluation,
-- clustered trajectory visualization, and
-- cluster-wise mean trajectory visualization.
+The original team presentation also included K-Means re-clustering of HDBSCAN noise trajectories, investigation of individual trajectories with unusual flight-path patterns, and qualitative discussion of possible weather and ATC-related deviations. Those follow-up analyses are not implemented in the current codebase and are therefore not presented here as reproducible outputs.
 
-The original team presentation also included follow-up work such as:
-
-- K-Means re-clustering of HDBSCAN noise trajectories,
-- investigation of individual abnormal trajectories, and
-- qualitative discussion of possible weather and ATC-related deviations.
-
-Those follow-up analyses are **not implemented in the current codebase**, so they are not presented here as reproducible outputs.
-
-## Team Project and Contributions
-
-This was a three-person course project.
-
-**Yeseo Kim**
-
-- proposed normalizing trajectories with different sample counts to a common length,
-- implemented the HDBSCAN clustering pipeline for the collected flight data,
-- experimented with HDBSCAN hyperparameters, and
-- coordinated the overall project workflow and presentation preparation.
-
-Other team contributions included flight-data collection, adapting the trajectory comparison to Hausdorff distance, proposing additional noise-based evaluation and analysis, and investigating abnormal trajectories.
 
 ## Limitations
 
@@ -257,11 +256,3 @@ Other team contributions included flight-data collection, adapting the trajector
 - The project-specific evaluation score is a heuristic, not a standard HDBSCAN metric.
 - Raw data are not redistributed, so full reproduction requires access to trajectory files matching the documented schema.
 - The current repository does not reproduce every follow-up analysis shown in the original team presentation.
-
-## Course Context
-
-Fall 2025 course project:
-
-**Clustering Flight Trajectories using HDBSCAN: Identifying Operational Patterns and Anomalies**
-
-The assignment required an end-to-end workflow for collecting, preprocessing, clustering, and analyzing real-world flight trajectory data.
