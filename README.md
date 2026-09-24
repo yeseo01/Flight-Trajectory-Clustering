@@ -85,12 +85,12 @@ The project uses the symmetric Hausdorff distance between pairs of trajectories.
 
 For trajectories \(A\) and \(B\),
 
-\[
+$$
 H(A,B) = \max\left(
 \max_{a \in A}\min_{b \in B} d(a,b),
 \max_{b \in B}\min_{a \in A} d(a,b)
 \right).
-\]
+$$
 
 The original course methodology computes pointwise distance using Euclidean distance on longitude/latitude coordinates.
 
@@ -112,12 +112,12 @@ Silhouette score is calculated using only trajectories assigned to non-noise clu
 
 The course project also used the following heuristic to balance cluster separation against the fraction of trajectories classified as noise:
 
-\[
+$$
 Score =
 0.9 \times Silhouette
 -
 0.1 \times NoiseRatio
-\]
+$$
 
 This score is a project-specific heuristic rather than a standard HDBSCAN evaluation metric.
 
